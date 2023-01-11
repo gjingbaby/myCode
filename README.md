@@ -7,3 +7,4 @@
 5. [Txt坐标转shp文件](convertXY.py)
 6. [百度Poi数据下载](myPoi.py)
 7. [文件夹按序号重命名](hlj.py)
+8. [移动文件到指定文件夹](whl.py)
