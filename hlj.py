@@ -1,6 +1,4 @@
 import os
-import shutil
-import time
 
 def get_folder_name(folderpath):
     os.chdir(folderpath)
