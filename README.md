@@ -6,3 +6,4 @@
 4. [爬取规划年会论文集](GuiHuaNianHui.py)
 5. [Txt坐标转shp文件](convertXY.py)
 6. [百度Poi数据下载](myPoi.py)
+7. [文件夹按序号重命名](hlj.py)
