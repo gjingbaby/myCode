@@ -1,58 +1,110 @@
 # -*- coding: utf-8 -*-
 
 '''
-代码实现了以下功能：
-    1. 获取要素类中字段 "a" 的唯一值列表；
-    2. 对于每个唯一的 "a" 值，使用数据访问搜索游标获取所有该值的行和 "b" 值；
-    3. 将 "b" 值排序，然后为每个 "b" 值计算逆序等级，并将结果存储在字典中；
-    4. 使用数据访问更新游标，为所有匹配要素的 "c" 值分配逆序值；
-    5. 成功更新后输出消息 "Sorting and ranking complete."。
-该代码实现了通过 Python 脚本对要素类进行排序和排名的功能，当要素类中存在多个 "a" 值时，可以为每个唯一的 "a" 值值的所有 "b" 值分别排序并分配排名（以逆序值的形式）。
+这个函数的作用是对一个shp文件的属性表进行排序和分组,并添加一个新的字段。它有五个参数，分别是：
 
-以下是代码中每个参数的说明：
-    input_fc：输入要素类的路径，其中需要进行排序和排名的字段包括 "a"、"b" 和 "c"；
-    a_field：字符串类型，需要进行排序和排名的要素类的字段 "a" 的名称；
-    b_field：浮点类型，需要进行排序和排名的要素类的字段 "b" 的名称；
-    c_field：字符串类型，需要进行排序和排名的要素类的字段 "c" 的名称。
-更具体地说，这些参数用于指定代码将在哪个要素类中执行排序和排名操作，以及要基于哪些字段执行排序和排名。 a_field 字段的唯一值将被用作分组标准，b_field 字段中的数值将被排序，c_field 的数值将设置为针对 "a" 和 "b" 字段的逆序等级。
+input_shp: 输入要处理的shp文件的路径,例如r"C:\Users\18292\Desktop\1.矢量空间数据\统一坐标\610632ZDJZD.shp"
+fid_field: shp文件中的FID字段名,用来唯一标识每一行的数据，例如"FID"
+djzq_field: shp文件中的DJZQ字段名,用来分组数据,例如"DJZQ"
+xzbz_field: shp文件中的XZBZ字段名,用来排序数据，例如"XZBZ"
+jzd_field: 要添加的新字段名，用来存储每一行的排名结果，例如"JZD"
+函数的输出是将排名结果写入新的属性表,并打印每一行的FID值。
 '''
 
+# import arcpy
+# from itertools import groupby
+
+# # 输入要处理的shp文件
+# input_shp = r"C:\Users\18292\Desktop\1.矢量空间数据\统一坐标\610632ZDJZD.shp"
+
+# # 输出属性表中的字段名
+# output_fields = ["FID", "DJZQ", "XZBZ"]
+
+# # 添加一个新的字段名
+# new_field = "JZD"
+
+# # 读取属性表中的数据并进行排序和分组
+# data = {} # 用一个字典来存储每一行的数据，用FID字段作为键
+# groups = {} # 用一个字典来存储每个分组的数据，用DJZQ字段作为键
+# with arcpy.da.SearchCursor(input_shp, output_fields) as cursor:
+#     for row in cursor:
+#         data[row[0]] = list(row) # 将每一行的数据添加到data字典中，以FID值为键
+#         if row[1] not in groups: # 如果DJZQ值不在groups字典中
+#             groups[row[1]] = [] # 就创建一个空列表
+#         groups[row[1]].append(row[0]) # 将FID值添加到对应的DJZQ列表中
+#     for djzq, rows in groups.items(): # 遍历每个分组
+#         rows.sort(key=lambda x: data[x][2], reverse=True) # 在每个分组内按照XZBZ字段进行降序排名
+#         prev_xzbz = None # 记录上一行的XZBZ值
+#         jzd = 0 # 记录JZD值
+#         rank = 1 # 记录当前的序号
+#         for i, row in enumerate(rows): # 给每一行添加一个新的JZD字段
+#             if i > 0 and data[row][2] == prev_xzbz: # 如果当前行的XZBZ值和上一行的XZBZ值相等
+#                 jzd += 1 # 就让JZD值加一
+#             else: # 否则
+#                 jzd = rank # 就让JZD值等于当前的序号
+#             data[row].append(jzd) # 添加JZD值到data字典中对应的行中
+#             prev_xzbz = data[row][2] # 更新上一行的XZBZ值
+#             rank += 1 # 更新当前的序号
+
+# # 打印排序和分组后的结果
+# for row in data.values():
+#     print(row[0])
+
+# # 将结果写入新的属性表
+# arcpy.AddField_management(input_shp, new_field, "LONG") # 添加一个新的字段
+# with arcpy.da.UpdateCursor(input_shp, output_fields + [new_field]) as cursor:
+#     for row in cursor:
+#         key = row[0] # 用FID字段作为键，匹配新的JZD字段的值
+#         if key in data: # 如果键存在于data字典中，说明有对应的排名结果
+#             row[-1] = data[key][-1] # 将新的JZD字段值写入属性表
+#             cursor.updateRow(row)
+
+# print("done")
+
 import arcpy
+from itertools import groupby
 
-def sort_and_rank(input_fc, a_field, b_field, c_field):
-    
-    field_names = [a_field, b_field, c_field]
+# 定义一个函数，参数为input_shp, fid_field, djzq_field, xzbz_field, jzd_field
+def process_shp(input_shp, fid_field, djzq_field, xzbz_field, jzd_field):
 
-    # 获取 "a" 字段中的唯一值列表
-    values_a = set([r[0] for r in arcpy.da.SearchCursor(input_fc, a_field)])
+    # 输出属性表中的字段名
+    output_fields = [fid_field, djzq_field, xzbz_field]
 
-    # 针对 "a" 字段中每个唯一值，获取 "b" 值的所有行
-    for a_value in values_a:
+    # 读取属性表中的数据并进行排序和分组
+    data = {} # 用一个字典来存储每一行的数据，用FID字段作为键
+    groups = {} # 用一个字典来存储每个分组的数据，用DJZQ字段作为键
+    with arcpy.da.SearchCursor(input_shp, output_fields) as cursor:
+        for row in cursor:
+            data[row[0]] = list(row) # 将每一行的数据添加到data字典中，以FID值为键
+            if row[1] not in groups: # 如果DJZQ值不在groups字典中
+                groups[row[1]] = [] # 就创建一个空列表
+            groups[row[1]].append(row[0]) # 将FID值添加到对应的DJZQ列表中
+        for djzq, rows in groups.items(): # 遍历每个分组
+            rows.sort(key=lambda x: data[x][2], reverse=True) # 在每个分组内按照XZBZ字段进行降序排名
+            prev_xzbz = None # 记录上一行的XZBZ值
+            jzd = 0 # 记录JZD值
+            rank = 1 # 记录当前的序号
+            for i, row in enumerate(rows): # 给每一行添加一个新的JZD字段
+                if i > 0 and data[row][2] == prev_xzbz: # 如果当前行的XZBZ值和上一行的XZBZ值相等
+                    jzd += 1 # 就让JZD值加一
+                else: # 否则
+                    jzd = rank # 就让JZD值等于当前的序号
+                data[row].append(jzd) # 添加JZD值到data字典中对应的行中
+                prev_xzbz = data[row][2] # 更新上一行的XZBZ值
+                rank += 1 # 更新当前的序号
 
-        # 创建一个列表来存储 "b" 值
-        b_values = []
+    # 打印排序和分组后的结果
+    for row in data.values():
+        print(row[0])
 
-        # 使用搜索游标获取所有匹配 "a" 值的行和 "b" 值
-        with arcpy.da.SearchCursor(input_fc, field_names, "{}='{}'".format(a_field, a_value)) as cursor:
-            for row in cursor:
-                b_values.append(row[1])
-
-        # 对 "b" 值进行升序排列
-        b_values.sort()
-
-        # 创建字典来存储 b-value/count 对
-        count_dict = {}
-        for idx, b_value in enumerate(b_values, start=1):
-            count_dict[b_value] = len(b_values) - idx + 1
-
-        # 使用更新游标更新 "c" 值
-        with arcpy.da.UpdateCursor(input_fc, field_names, "{}='{}'".format(a_field, a_value)) as cursor:
-            for row in cursor:
-                row[2] = count_dict[row[1]]
+    # 将结果写入新的属性表
+    arcpy.AddField_management(input_shp, jzd_field, "LONG") # 添加一个新的字段
+    with arcpy.da.UpdateCursor(input_shp, output_fields + [jzd_field]) as cursor:
+        for row in cursor:
+            key = row[0] # 用FID字段作为键，匹配新的JZD字段的值
+            if key in data: # 如果键存在于data字典中，说明有对应的排名结果
+                row[-1] = data[key][-1] # 将新的JZD字段值写入属性表
                 cursor.updateRow(row)
 
-    arcpy.AddMessage("排序和排名完成。")
-
-
-input_fc = r"C:\Users\18292\Desktop\maqinqin\610632黄陵县\1.矢量空间数据\统一坐标\610632ZDJZD.shp"
-sort_and_rank(input_fc, "GG", "XZBZ", "OLD_JZD")
+# 调用函数，传入参数，例如：
+process_shp(r"C:\Users\18292\Desktop\1.矢量空间数据\统一坐标\610632ZDJZD.shp", "FID", "DJZQ", "XZBZ", "JZD")
