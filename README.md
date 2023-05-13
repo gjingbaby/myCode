@@ -15,4 +15,6 @@
 13. [替换字段值特定字符](替换字段值字符.py)
 14. [合并指定PDF文件](pdfMerge.py)
 15. [林权pdf文件分类整理](D:\myCode\lf\V4\hahahaha.py)
+16. [pdf页面位置互换]("D:\myCode\lz\change_pdf_order.py")
+17. [pdf首页删除]("D:\myCode\lz\change_pdf_order.py")
 
