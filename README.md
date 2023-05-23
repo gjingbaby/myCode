@@ -14,7 +14,7 @@
 12. [按字段分组组内自然排序赋序号](zddm.py)
 13. [替换字段值特定字符](替换字段值字符.py)
 14. [合并指定PDF文件](pdfMerge.py)
-15. [林权pdf文件分类整理]("D:\myCode\林权流程化pdf处理.py")
-16. [pdf页面位置互换]("D:\myCode\change_pdf_order.py")
-17. [pdf首页删除]("D:\myCode\change_pdf_order.py")
+15. [林权pdf文件分类整理](林权流程化pdf处理.py)
+16. [pdf页面位置互换](change_pdf_order.py)
+17. [pdf首页删除](change_pdf_order.py)
 
