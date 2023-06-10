@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+
+'''
+esri python36
+'''
+
 import arcpy
 
 def sort_shp(shp_file, xzqdm_field, xmc_field,pici):
